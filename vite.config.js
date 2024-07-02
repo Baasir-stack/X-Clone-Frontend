@@ -6,12 +6,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    proxy: {
-      "/api": {
-        target: "https://x-clone-backend-gamma.vercel.app",
-        changeOrigin: true,
-      },
-    },
   },
   build: {
     outDir: "dist",
