@@ -19,7 +19,7 @@ const Post = ({ post }) => {
   const postOwner = post.user;
   const isLiked = post?.likes?.includes(authUser?._id);
   const isSaved = post?.saves?.includes(authUser?._id);
-  const isRetweeted = post?.retweets?.includes(authUser?._id);
+  const isRetweeted = post?.retweet === authUser?._id;
 
   const isMyPost = authUser?._id === post?.user._id;
 
