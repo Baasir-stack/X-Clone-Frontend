@@ -166,15 +166,8 @@ const Post = ({ post }) => {
         throw new Error(error);
       }
     },
-    onSuccess: (updatedRetweets) => {
-      queryClient.setQueryData(["posts"], (oldData) => {
-        return oldData.map((p) => {
-          if (p._id === post._id) {
-            return { ...p, retweets: updatedRetweets };
-          }
-          return p;
-        });
-      });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
     },
     onError: (error) => {
       toast.error(error.message);
