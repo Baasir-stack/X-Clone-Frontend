@@ -12,7 +12,7 @@ import RightPanel from "./components/common/RightPanel";
 import { Toaster } from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "./components/common/LoadingSpinner";
-import BASE_URL from "./constants";
+import { BASE_URL } from "./constants";
 
 function App() {
   const { data: authUser, isLoading } = useQuery({
