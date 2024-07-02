@@ -255,7 +255,7 @@ const ProfilePage = () => {
                   className="flex justify-center flex-1 p-3 text-slate-500 hover:bg-secondary transition duration-300 relative cursor-pointer"
                   onClick={() => setFeedType("retweets")}
                 >
-                  Saved Posts
+                  Retweets Posts
                   {feedType === "retweets" && (
                     <div className="absolute bottom-0 w-10  h-1 rounded-full bg-primary" />
                   )}
