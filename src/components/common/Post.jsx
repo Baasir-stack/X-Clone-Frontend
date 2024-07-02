@@ -19,7 +19,7 @@ const Post = ({ post }) => {
   const postOwner = post.user;
   const isLiked = post?.likes?.includes(authUser?._id);
   const isSaved = post?.saves?.includes(authUser?._id);
-  const isRetweeted = post?.retweet === authUser?._id;
+  const isRetweeted = authUser?.retweetedPosts.includes(post?._id);
 
   const isMyPost = authUser?._id === post?.user._id;
 
@@ -335,9 +335,7 @@ const Post = ({ post }) => {
                       ? "text-green-500"
                       : "text-slate-500 group-hover:text-green-500"
                   }`}
-                >
-                  {post.retweet?.length}
-                </span>
+                ></span>
               </div>
               <div
                 className="flex gap-1 items-center group cursor-pointer"
