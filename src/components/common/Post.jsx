@@ -26,9 +26,13 @@ const Post = ({ post }) => {
   const { mutate: deletePost, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
       try {
-        const res = await fetch(`${BASE_URL}/api/posts/${post._id}`, {
-          method: "DELETE",
-        });
+        const res = await fetch(
+          `${BASE_URL}/api/posts/${post._id}`,
+          {
+            method: "DELETE",
+          },
+          { credentials: "include" }
+        );
         const data = await res.json();
 
         if (!res.ok) {
@@ -48,9 +52,13 @@ const Post = ({ post }) => {
   const { mutate: likePost, isPending: isLiking } = useMutation({
     mutationFn: async () => {
       try {
-        const res = await fetch(`${BASE_URL}/api/posts/like/${post._id}`, {
-          method: "POST",
-        });
+        const res = await fetch(
+          `${BASE_URL}/api/posts/like/${post._id}`,
+          {
+            method: "POST",
+          },
+          { credentials: "include" }
+        );
         const data = await res.json();
         if (!res.ok) {
           throw new Error(data.error || "Something went wrong");
@@ -88,6 +96,7 @@ const Post = ({ post }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ text: comment }),
+          credentials: "include",
         });
         const data = await res.json();
 
