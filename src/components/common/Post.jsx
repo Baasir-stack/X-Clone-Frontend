@@ -343,7 +343,7 @@ const Post = ({ post }) => {
                       : "text-slate-500 group-hover:text-green-500"
                   }`}
                 >
-                  {post.retweets?.length}
+                  {post.retweet?.length}
                 </span>
               </div>
               <div
