@@ -19,6 +19,7 @@ const Post = ({ post }) => {
   const postOwner = post.user;
   const isLiked = post.likes.includes(authUser?._id);
   const isSaved = post.saves.includes(authUser?._id);
+  const isRetweeted = post.retweets.includes(authUser?._id);
 
   const isMyPost = authUser?._id === post?.user._id;
 
@@ -64,10 +65,6 @@ const Post = ({ post }) => {
       }
     },
     onSuccess: (updatedLikes) => {
-      // this is not the best UX, bc it will refetch all posts
-      // queryClient.invalidateQueries({ queryKey: ["posts"] });
-
-      // instead, update the cache directly for that post
       queryClient.setQueryData(["posts"], (oldData) => {
         return oldData.map((p) => {
           if (p._id === post._id) {
@@ -99,10 +96,6 @@ const Post = ({ post }) => {
       }
     },
     onSuccess: (updatedSavedPosts) => {
-      // this is not the best UX, bc it will refetch all posts
-      // queryClient.invalidateQueries({ queryKey: ["posts"] });
-
-      // instead, update the cache directly for that post
       queryClient.setQueryData(["posts"], (oldData) => {
         return oldData.map((p) => {
           if (p._id === post._id) {
@@ -150,8 +143,38 @@ const Post = ({ post }) => {
           return p;
         });
       });
-      // Close the modal after successful comment
       document.getElementById("comments_modal" + post._id).close();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const { mutate: retweetPost, isPending: isRetweeting } = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/api/posts/retweet/${post._id}`, {
+          method: "POST",
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Something went wrong");
+        }
+        return data;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
+    onSuccess: (updatedRetweets) => {
+      queryClient.setQueryData(["posts"], (oldData) => {
+        return oldData.map((p) => {
+          if (p._id === post._id) {
+            return { ...p, retweets: updatedRetweets };
+          }
+          return p;
+        });
+      });
     },
     onError: (error) => {
       toast.error(error.message);
@@ -172,9 +195,15 @@ const Post = ({ post }) => {
     if (isLiking) return;
     likePost();
   };
+
   const handleSavePost = () => {
     if (isSaving) return;
     saveUnSavePost();
+  };
+
+  const handleRetweetPost = () => {
+    if (isRetweeting) return;
+    retweetPost();
   };
 
   return (
@@ -233,12 +262,11 @@ const Post = ({ post }) => {
                     .showModal()
                 }
               >
-                <FaRegComment className="w-4 h-4  text-slate-500 group-hover:text-sky-400" />
+                <FaRegComment className="w-4 h-4 text-slate-500 group-hover:text-sky-400" />
                 <span className="text-sm text-slate-500 group-hover:text-sky-400">
                   {post.comments.length}
                 </span>
               </div>
-              {/* We're using Modal Component from DaisyUI */}
               <dialog
                 id={`comments_modal${post._id}`}
                 className="modal border-none outline-none"
@@ -282,7 +310,7 @@ const Post = ({ post }) => {
                     onSubmit={handlePostComment}
                   >
                     <textarea
-                      className="textarea w-full p-1 rounded text-md resize-none border focus:outline-none  border-gray-800"
+                      className="textarea w-full p-1 rounded text-md resize-none border focus:outline-none border-gray-800"
                       placeholder="Add a comment..."
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
@@ -296,10 +324,26 @@ const Post = ({ post }) => {
                   <button className="outline-none">close</button>
                 </form>
               </dialog>
-              <div className="flex gap-1 items-center group cursor-pointer">
-                <BiRepost className="w-6 h-6  text-slate-500 group-hover:text-green-500" />
-                <span className="text-sm text-slate-500 group-hover:text-green-500">
-                  0
+              <div
+                className="flex gap-1 items-center group cursor-pointer"
+                onClick={handleRetweetPost}
+              >
+                {isRetweeting && <LoadingSpinner size="sm" />}
+                <BiRepost
+                  className={`w-6 h-6 ${
+                    isRetweeted
+                      ? "text-green-500"
+                      : "text-slate-500 group-hover:text-green-500"
+                  }`}
+                />
+                <span
+                  className={`text-sm ${
+                    isRetweeted
+                      ? "text-green-500"
+                      : "text-slate-500 group-hover:text-green-500"
+                  }`}
+                >
+                  {post.retweets.length}
                 </span>
               </div>
               <div
@@ -311,11 +355,10 @@ const Post = ({ post }) => {
                   <FaRegHeart className="w-4 h-4 cursor-pointer text-slate-500 group-hover:text-pink-500" />
                 )}
                 {isLiked && !isLiking && (
-                  <FaRegHeart className="w-4 h-4 cursor-pointer text-pink-500 " />
+                  <FaRegHeart className="w-4 h-4 cursor-pointer text-pink-500" />
                 )}
-
                 <span
-                  className={`text-sm  group-hover:text-pink-500 ${
+                  className={`text-sm group-hover:text-pink-500 ${
                     isLiked ? "text-pink-500" : "text-slate-500"
                   }`}
                 >
@@ -331,13 +374,11 @@ const Post = ({ post }) => {
               {!isSaved && !isSaving && (
                 <FaRegBookmark className="w-4 h-4 cursor-pointer text-slate-500 group-hover:text-blue-500" />
               )}
-
               {isSaved && !isSaving && (
-                <FaRegBookmark className="w-4 h-4 cursor-pointer text-blue-500 " />
+                <FaRegBookmark className="w-4 h-4 cursor-pointer text-blue-500" />
               )}
-
               <span
-                className={`text-sm  group-hover:text-blue-500 ${
+                className={`text-sm group-hover:text-blue-500 ${
                   isSaved ? "text-blue-500" : "text-slate-500"
                 }`}
               >

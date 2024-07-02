@@ -1,3 +1,4 @@
+/* eslint-disable no-mixed-spaces-and-tabs */
 import Post from "./Post";
 import PostSkeleton from "../skeletons/PostSkeleton";
 import { useQuery } from "@tanstack/react-query";
@@ -17,6 +18,8 @@ const Posts = ({ feedType, username, userId }) => {
         return `${BASE_URL}/api/posts/likes/${userId}`;
       case "saves":
         return `${BASE_URL}/api/posts/saves/${userId}`;
+      case "retweets":
+        return `${BASE_URL}/api/posts/retweets/${userId}`;
       default:
         return `${BASE_URL}/api/posts/all`;
     }
