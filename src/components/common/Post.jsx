@@ -18,6 +18,7 @@ const Post = ({ post }) => {
   const queryClient = useQueryClient();
   const postOwner = post.user;
   const isLiked = post.likes.includes(authUser?._id);
+  const isSaved = post.saves.includes(authUser?._id);
 
   const isMyPost = authUser?._id === post?.user._id;
 
@@ -71,6 +72,41 @@ const Post = ({ post }) => {
         return oldData.map((p) => {
           if (p._id === post._id) {
             return { ...p, likes: updatedLikes };
+          }
+          return p;
+        });
+      });
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const { mutate: saveUnSavePost, isPending: isSaving } = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/api/posts/save/${post._id}`, {
+          method: "POST",
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Something went wrong");
+        }
+        return data;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
+    onSuccess: (updatedSavedPosts) => {
+      // this is not the best UX, bc it will refetch all posts
+      // queryClient.invalidateQueries({ queryKey: ["posts"] });
+
+      // instead, update the cache directly for that post
+      queryClient.setQueryData(["posts"], (oldData) => {
+        return oldData.map((p) => {
+          if (p._id === post._id) {
+            return { ...p, saves: updatedSavedPosts };
           }
           return p;
         });
@@ -135,6 +171,10 @@ const Post = ({ post }) => {
   const handleLikePost = () => {
     if (isLiking) return;
     likePost();
+  };
+  const handleSavePost = () => {
+    if (isSaving) return;
+    saveUnSavePost();
   };
 
   return (
@@ -283,8 +323,26 @@ const Post = ({ post }) => {
                 </span>
               </div>
             </div>
-            <div className="flex w-1/3 justify-end gap-2 items-center">
-              <FaRegBookmark className="w-4 h-4 text-slate-500 cursor-pointer" />
+            <div
+              className="flex w-1/3 justify-end gap-2 items-center"
+              onClick={handleSavePost}
+            >
+              {isSaving && <LoadingSpinner size="sm" />}
+              {!isSaved && !isSaving && (
+                <FaRegBookmark className="w-4 h-4 cursor-pointer text-slate-500 group-hover:text-blue-500" />
+              )}
+
+              {isSaved && !isSaving && (
+                <FaRegBookmark className="w-4 h-4 cursor-pointer text-blue-500 " />
+              )}
+
+              <span
+                className={`text-sm  group-hover:text-blue-500 ${
+                  isSaved ? "text-blue-500" : "text-slate-500"
+                }`}
+              >
+                {post.saves.length}
+              </span>
             </div>
           </div>
         </div>

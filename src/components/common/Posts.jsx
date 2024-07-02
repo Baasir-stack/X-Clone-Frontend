@@ -15,6 +15,8 @@ const Posts = ({ feedType, username, userId }) => {
         return `${BASE_URL}/api/posts/user/${username}`;
       case "likes":
         return `${BASE_URL}/api/posts/likes/${userId}`;
+      case "saves":
+        return `${BASE_URL}/api/posts/saves/${userId}`;
       default:
         return `${BASE_URL}/api/posts/all`;
     }
