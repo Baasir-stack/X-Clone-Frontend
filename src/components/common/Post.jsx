@@ -17,8 +17,8 @@ const Post = ({ post }) => {
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
   const queryClient = useQueryClient();
   const postOwner = post.user;
-  const isLiked = post.likes.includes(authUser?._id);
-  const isSaved = post.saves.includes(authUser?._id);
+  const isLiked = post?.likes?.includes(authUser?._id);
+  const isSaved = post?.saves?.includes(authUser?._id);
   const isRetweeted = post?.retweets?.includes(authUser?._id);
 
   const isMyPost = authUser?._id === post?.user._id;
@@ -343,7 +343,7 @@ const Post = ({ post }) => {
                       : "text-slate-500 group-hover:text-green-500"
                   }`}
                 >
-                  {post.retweets.length}
+                  {post?.retweets.length}
                 </span>
               </div>
               <div
