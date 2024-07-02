@@ -16,24 +16,31 @@ const Sidebar = () => {
       try {
         const res = await fetch(`${BASE_URL}/api/auth/logout`, {
           method: "POST",
-          credentials: "include",
+          credentials: "include", // Ensure credentials are included
         });
-        const data = await res.json();
 
         if (!res.ok) {
-          throw new Error(data.error || "Something went wrong");
+          throw new Error("Logout failed");
         }
+
+        // Clear the query cache and redirect to login page
+        queryClient.invalidateQueries(["authUser"]);
+        toast.success("Logged out successfully");
       } catch (error) {
-        throw new Error(error);
+        toast.error(error.message || "Logout failed");
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["authUser"] });
-    },
-    onError: () => {
-      toast.error("Logout failed");
+    onError: (error) => {
+      toast.error(error.message || "Logout failed");
     },
   });
+  const handleLogout = async () => {
+    try {
+      logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
   return (
@@ -91,10 +98,7 @@ const Sidebar = () => {
               </div>
               <BiLogOut
                 className="w-5 h-5 cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  logout();
-                }}
+                onClick={handleLogout}
               />
             </div>
           </Link>
